@@ -2,14 +2,14 @@
 ************************************************************************************************
 * ShiftGameWindow                                                                              *
 *                                                                                              *
-* Version:             0.1 (version history at the bottom of this script)                      *
+* Version:             0.2 (version history at the bottom of this script)                      *
 * AutoHotkey Version:  1.1                                                                     *
 * Language:            English                                                                 *
 * Platform:            Windows 7, 8                                                            *
 * Author:              www.twitter.com/matthiew                                                *
 *                                                                                              *
 * Script Function:     For video games in windowed mode at native resolution. ShiftGameWindow  *
-*					   will reposition the window to fill the screen.                          *
+*					   will reposition the active window to fill the screen.                   *
 ************************************************************************************************
 */
 
@@ -27,9 +27,18 @@ ShiftGameWindow Known Issues:
    will process these normally, but the results won't be normal. Usually when this happens the
    game just needs to be restarted. I've seen this behaviour in COD4, CODWaW, Loadout, and
    Titanfall.
+   
+
+TO DO:
+ - Compile.
+ - Create an icon.
+ - Distribute.
+ - Troubleshoot Loadout.
 
 
 ShiftGameWindow Version History:
+0.2 - Improved error handling. Changed "Retry" to "Troubleshooting" and added troubleshooting
+	  steps for the user.
 0.1 - Created ShiftGameWindow.
 ************************************************************************************************
 */
