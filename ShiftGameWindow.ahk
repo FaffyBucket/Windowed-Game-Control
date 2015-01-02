@@ -2,7 +2,7 @@
 ************************************************************************************************
 * ShiftGameWindow                                                                              *
 *                                                                                              *
-* Version:             0.2 (version history at the bottom of this script)                      *
+* Version:             0.3 (version history at the bottom of this script)                      *
 * AutoHotkey Version:  1.1                                                                     *
 * Language:            English                                                                 *
 * Platform:            Windows 7, 8                                                            *
@@ -70,11 +70,12 @@ if ((WinWidth > MonWidth) && (WinHeight > MonHeight))
 			clearly on the monitor workspace. If it is on/near the edge of the screen, or the
 			StartMenu/Taskbar area, ShiftGameWindow will have problems detecting the window.
 			`n
-			`nShiftGameWindow will now undo any changes and exit.
+			`nShiftGameWindow will now undo any changes and relaunch.
 		)
 		MsgBox, , ShiftGameWindow, %ErrorMsg1%
 		WinMove, %WinTitle%, , %WinX%, %WinY%,
-		return
+		Run "%A_ScriptFullPath%"
+		ExitApp
 	}
 	else
 	{
@@ -128,6 +129,7 @@ TO DO:
 
 
 ShiftGameWindow Version History:
+0.3 - Added relaunch.
 0.2 - Improved error handling. Changed "Retry" to "Troubleshooting" and added troubleshooting
 	  steps for the user.
 0.1 - Created ShiftGameWindow.

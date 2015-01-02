@@ -2,7 +2,7 @@
 ************************************************************************************************
 * ShiftGameWindow                                                                              *
 *                                                                                              *
-* Version:             0.2 (version history at the bottom of this script)                      *
+* Version:             0.3 (version history at the bottom of this script)                      *
 * AutoHotkey Version:  1.1                                                                     *
 * Language:            English                                                                 *
 * Platform:            Windows 7, 8                                                            *
@@ -37,6 +37,7 @@ TO DO:
 
 
 ShiftGameWindow Version History:
+0.3 - Added relaunch.
 0.2 - Improved error handling. Changed "Retry" to "Troubleshooting" and added troubleshooting
 	  steps for the user.
 0.1 - Created ShiftGameWindow.
