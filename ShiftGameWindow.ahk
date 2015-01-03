@@ -2,14 +2,16 @@
 ************************************************************************************************
 * ShiftGameWindow                                                                              *
 *                                                                                              *
-* Version:             0.3 (version history at the bottom of this script)                      *
+* Version:             0.4 (version history at the bottom of this script)                      *
 * AutoHotkey Version:  1.1                                                                     *
 * Language:            English                                                                 *
 * Platform:            Windows 7, 8                                                            *
 * Author:              www.twitter.com/matthiew                                                *
 *                                                                                              *
-* Script Function:     For video games in windowed mode at native resolution. ShiftGameWindow  *
-*					   will reposition the active window to fill the screen.                   *
+* Script Function:     This is designed for video games in windowed mode. Assign a keyboard    *
+*					   shortcut to run ShiftGameWindow, then when you press the shortcut key   *
+*					   ShiftGameWindow will reposition the active window to fill the screen.   *
+*					   																		   *
 ************************************************************************************************
 */
 
@@ -129,6 +131,7 @@ TO DO:
 
 
 ShiftGameWindow Version History:
+0.4 - Updated documentation.
 0.3 - Added relaunch.
 0.2 - Improved error handling. Changed "Retry" to "Troubleshooting" and added troubleshooting
 	  steps for the user.
