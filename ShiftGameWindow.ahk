@@ -201,6 +201,8 @@ TO DO:
 ShiftGameWindow Version History:
 0.6 - Completed ShiftGameWindow functionality.
 	- ChangeButtonNames2 still doesn't work.
+	- Added Manual resizing.
+	- Rewrote troubleshooting.
 0.5 - Added further troubleshooting, but it's incomplete.
 	- ChangeButtonNames2 doesn't work.
 	- "Advanced" doesn't do anything yet.
