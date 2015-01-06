@@ -2,7 +2,7 @@
 ************************************************************************************************
 * ShiftGameWindow                                                                              *
 *                                                                                              *
-* Version:             0.4 (version history at the bottom of this script)                      *
+* Version:             0.6 (version history at the bottom of this script)                      *
 * AutoHotkey Version:  1.1                                                                     *
 * Language:            English                                                                 *
 * Platform:            Windows 7, 8                                                            *
@@ -25,7 +25,7 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 
 
-
+; Get details of the active window and monitors.
 WinGetActiveTitle, WinTitle
 WinGetPos, WinX, WinY, WinWidth, WinHeight, %WinTitle%
 SysGet, MonitorCount, MonitorCount
@@ -41,71 +41,139 @@ Loop, %MonitorCount%
 		MonHeight := MonitorBottom - MonitorTop
 	}
 }
-if ((WinWidth > MonWidth) && (WinHeight > MonHeight))
+
+; Move the active window.
+X := (MonX - ((WinWidth - MonWidth) / 2))
+Y := (MonY - (WinHeight - MonHeight - (((WinWidth - MonWidth) / 2))))
+WinMove, %WinTitle%, , %X%, %Y%
+	
+; After moving the window, prompt for confirmation that it worked.
+SetTimer, ChangeButtonNames, 50 
+MsgBox, 3, ShiftGameWindow, Do you want to keep this window size and position?
+	
+; [Yes]: Moving the window was successful, return.
+IfMsgBox, Yes
+	return
+	
+; [Troubleshoot].
+else IfMsgBox, No
 {
-	X := (MonX - ((WinWidth - MonWidth) / 2))
-	Y := (MonY - (WinHeight - MonHeight - (((WinWidth - MonWidth) / 2))))
-;	if (%WinTitle% = Loadout)
-;	{
-;		WinMove, Loadout, , %X%, %Y%, (%MonWidth% + 6), (%MonHeight% + 28)
-		;Loadout doesn't always launch at the correct resolution in windowed mode.
-		;This assumes the Windows 7 default border sizes.
-		;WinMove, Loadout, , -3, 743, 1372, 796
-;	}
-	WinMove, %WinTitle%, , %X%, %Y%
-	SetTimer, ChangeButtonNames, 50 
-	MsgBox, 3, ShiftGameWindow, Do you want to keep this window size and position?
+	WinMove, %WinTitle%, , 100, 100
+	ErrorMsg1 =
+	( LTrim Join`s
+		If you are experiencing problems with ShiftGameWindow, please check the following:
+		`n - Make sure that the TOP-LEFT corner of the game window is on the correct
+		monitor. Move it to the center to be sure.
+		`n - Make sure that the game resolution MATCHES the monitor resolution.
+		`n - Some games do not display at the correct resolution when in windowed mode. 
+		This can usually be corrected by restarting the game. However, if the game won't
+		display at the correct resolution, then ShiftGameWindow may not work. You can try
+		resizing it in the Advanced menu.
+		`n - Make sure that the TOP-LEFT corner of the game you want to reposition is
+		clearly on the monitor workspace. If it is on/near the edge of the screen, or the
+		StartMenu/Taskbar area, ShiftGameWindow will have problems detecting the window.
+		`n
+		`nAfter checking the above, press "Retry" to relaunch ShiftGameWindow.
+		`n
+		`nFor windows that are the wrong resolution, press "Advanced".
+		`n
+		`nTo undo any changes and exit, press "Cancel".
+	)
+	;SetTimer, ChangeButtonNames2, 50
+	MsgBox, 3, ShiftGameWindow troubleshooting, %ErrorMsg1%
+		
+; [Retry]: Reload ShiftGameWindow.
 	IfMsgBox, Yes
-		return
-	else IfMsgBox, No
 	{
-		ErrorMsg1 =
-		( LTrim Join`s
-			If you are experiencing problems with ShiftGameWindow, please check the following:
-			`n - Make sure that the TOP-LEFT corner of the game window is on the correct
-			monitor. Move it to the center to be sure.
-			`n - Make sure that the game resolution matches the monitor resolution.
-			`n - Some games do not display at the correct resolution when in windowed mode. 
-			This can usually be corrected by restarting the game. However, if the game won't
-			display at the correct resolution, then ShiftGameWindow will not work.
-			`n - Make sure that the TOP-LEFT corner of the game you want to reposition is
-			clearly on the monitor workspace. If it is on/near the edge of the screen, or the
-			StartMenu/Taskbar area, ShiftGameWindow will have problems detecting the window.
-			`n
-			`nShiftGameWindow will now undo any changes and relaunch.
-		)
-		MsgBox, , ShiftGameWindow, %ErrorMsg1%
-		WinMove, %WinTitle%, , %WinX%, %WinY%,
 		Run "%A_ScriptFullPath%"
 		ExitApp
 	}
+		
+; [Advanced]: Manual repositioning.
+	else IfMsgBox, No
+	{
+		InputMsg1 =
+		( LTrim Join`s
+			Please enter the desired width of the game window in pixels. This should be
+			the width of your display, plus the width of the left and right borders of the
+			game window.
+			`n
+			`nFor example if your display's resolution is 1366x768 and you are running
+			Windows 7 with the default theme and DPI, you would enter "1372".
+			`n
+			`nThe default value is the window's current width.
+		)
+		InputBox, ManualWidth, Enter desired width, %InputMsg1%, , 375, 279, , , , , %WinWidth%
+		if ErrorLevel
+		{
+			MsgBox, Window resizing cancelled. ShiftGameWindow will undo any changes and exit.
+			WinMove, %WinTitle%, , %WinX%, %WinY%
+			ExitApp
+		}
+		InputMsg2 =
+		( LTrim Join`s
+			Please enter the desired height of the game window in pixels. This should be
+			the height of your display, plus the height of the top border (Titlebar) and
+			bottom border of the game window.
+			`n
+			`nFor example if your display's resolution is 1366x768 and you are running
+			Windows 7 with the default theme and DPI, you would enter "796".
+			`n
+			`nThe default value is the window's current height.
+		)
+		InputBox, ManualHeight, Enter desired height, %InputMsg2%, , 375, 279, , , , , %WinHeight%
+		if ErrorLevel
+		{
+			MsgBox, Window resizing cancelled. ShiftGameWindow will undo any changes and exit.
+			WinMove, %WinTitle%, , %WinX%, %WinY%
+			ExitApp
+		}
+		WinMove, %WinTitle%, , %X%, %Y%, %ManualWidth%, %ManualHeight%
+		return
+	}
+		
+; [Cancel]: Undo any changes and end.
 	else
 	{
-		WinMove, %WinTitle%, , %WinX%, %WinY%,
-		return
-	}
-	ChangeButtonNames:
-	{
-		IfWinNotExist, ShiftGameWindow
-			return  ; Keep waiting.
-		SetTimer, ChangeButtonNames, off 
-		WinActivate 
-		ControlSetText, Button1, &Yes
-		ControlSetText, Button2, &Troubleshoot
-		ControlSetText, Button3, &No
+		WinMove, %WinTitle%, , %WinX%, %WinY%
 		return
 	}
 }
+	
+; [Cancel]: Undo any changes and end.
 else
 {
-	ErrorMsg2 =
-	( LTrim Join
-		The active window's resolution is lower than your monitor's. ShiftGameWindow will only 
-		work if both resolutions match.`n`nShiftGameWindow will now exit.
-	)
-	MsgBox, , Invalid Resolution, %ErrorMsg2%
+	WinMove, %WinTitle%, , %WinX%, %WinY%
 	return
 }
+
+
+ChangeButtonNames:
+{
+	IfWinNotExist, ShiftGameWindow
+		return  ; Keep waiting.
+	SetTimer, ChangeButtonNames, off 
+	WinActivate 
+	ControlSetText, Button1, &Yes
+	ControlSetText, Button2, &Troubleshoot
+	ControlSetText, Button3, &No
+	return
+}
+	
+
+/*
+ChangeButtonNames2::
+{
+	IfWinNotExist, ShiftGameWindow troubleshooting
+		return  ; Keep waiting.
+	SetTimer, ChangeButtonNames2, off 
+	WinActivate 
+	ControlSetText, Button1, &Retry
+	ControlSetText, Button2, &Advanced
+	ControlSetText, Button3, &Cancel
+	return
+}
+*/
 
 
 
@@ -127,10 +195,15 @@ TO DO:
  - Compile.
  - Create an icon.
  - Distribute.
- - Troubleshoot Loadout.
+ - ChangeButtonNames2.
 
 
 ShiftGameWindow Version History:
+0.6 - Completed ShiftGameWindow functionality.
+	- ChangeButtonNames2 still doesn't work.
+0.5 - Added further troubleshooting, but it's incomplete.
+	- ChangeButtonNames2 doesn't work.
+	- "Advanced" doesn't do anything yet.
 0.4 - Updated documentation.
 0.3 - Added relaunch.
 0.2 - Improved error handling. Changed "Retry" to "Troubleshooting" and added troubleshooting
