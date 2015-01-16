@@ -1,0 +1,63 @@
+/*
+************************************************************************************************
+* ShiftGameWindow                                                                              *
+*                                                                                              *
+* Version:             0.1 (version history at the bottom of this script)                      *
+* AutoHotkey Version:  1.1                                                                     *
+* Language:            English                                                                 *
+* Platform:            Windows 7, 8                                                            *
+* Author:              www.twitter.com/matthiew                                                *
+*                                                                                              *
+* Script Function:     This is designed for video games in windowed mode. Assign a keyboard    *
+*					   shortcut to run ShiftGameWindow, then when you press the shortcut key   *
+*					   ShiftGameWindow will reposition the active window to fill the screen.   *
+*					   																		   *
+************************************************************************************************
+*/
+
+
+#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+
+#NoTrayIcon
+#SingleInstance
+
+
+
+
+Gui, Add, Text,, Do you want to keep this window size and position?
+Gui, Add, Button, Default, &Yes
+Gui, Add, Button, , &No
+Gui, Show, , ShiftGameWindow
+return
+
+ButtonYes:
+ExitApp
+
+
+
+
+/*
+************************************************************************************************
+ShiftGameWindow Known Issues:
+ - If the top-left corner of the window is off-screen, ShiftGameWindow can't reposition the
+   window properly.
+ - If the top-left corner of the window is on or under the Taskbar, ShiftGameWindow can't
+   reposition the window properly.
+ - Sometimes a game in windowed mode won't render at the correct resolution. ShiftGameWindow
+   will process these normally, but the results won't be normal. Usually when this happens the
+   game just needs to be restarted. I've seen this behaviour in COD4, CODWaW, Loadout, and
+   Titanfall.
+   
+
+TO DO:
+ - Recreate ShiftGameWindow with a proper GUI.
+ - Create icon.
+ - Compile.
+
+
+ShiftGameWindow Version History:
+0.1 - 
+************************************************************************************************
+*/
