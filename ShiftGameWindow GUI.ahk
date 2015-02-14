@@ -1,23 +1,24 @@
 /*
-************************************************************************************************
-* ShiftGameWindow                                                                              *
-*                                                                                              *
-* Version:             0.02 (version history at the bottom of this script)                     *
-* AutoHotkey Version:  1.1                                                                     *
-* Language:            English                                                                 *
-* Platform:            Windows 7, 8                                                            *
-* Author:              www.twitter.com/matthiew                                                *
-*                                                                                              *
-* Script Function:     This is designed for video games in windowed mode. Assign a keyboard    *
-*					   shortcut to run ShiftGameWindow, then when you press the shortcut key   *
-*					   ShiftGameWindow will reposition the active window to fill the screen.   *
-*					   																		   *
-************************************************************************************************
+*******************************************************************************
+* ShiftGameWindow                                                             *
+*                                                                             *
+* Version:              0.03 (version history at the bottom of this script)   *
+* AutoHotkey Version:   1.1                                                   *
+* Language:             English                                               *
+* Platform:             Windows 7, 8                                          *
+* Author:               www.twitter.com/matthiew                              *
+*                                                                             *
+* Script Function:      This is designed for video games in windowed mode.	  *
+*						Assign a keyboard shortcut to run ShiftGameWindow,    *
+*						then when you press the shortcut key ShiftGameWindow  *
+*						will reposition the active window to fill the screen. *
+*					   														  *
+*******************************************************************************
 */
 
 
-#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+#NoEnv  ; Recommended for performance and compatibility.
+SendMode Input  ; Recommended due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 #NoTrayIcon
@@ -52,6 +53,7 @@ WinMove, %WinTitle%, , %X%, %Y%
 
 ; GUI.
 ; GUI settings.
+Gui, +MinSize340x296 +Resize
 Gui, Color, FFFFFF
 Gui, Font, s11
 ; Help Menu.
@@ -64,33 +66,33 @@ Gui, Menu, MyMenuBar
 ; Main section.
 Msg1 =
 ( LTrim Join`s
-	The active window has been shifted ("%WinTitle%").
-	`n
-	`nDo you want to keep this window size and position?
+	The active window has been shifted. Do you want
+	`nto keep this window size and position?
 )
-Gui, Add, Text, , %Msg1%
-Gui, Add, GroupBox
-Gui, Add, Button, Default, &Yes
-Gui, Add, Button, , &No
+Gui, Add, GroupBox, w316 h104,
+;Gui, Add, GroupBox, x12 y8 w100 h100,
+Gui, Add, Text, xp+12 yp+20, %Msg1%
+Gui, Add, Button, Default x146 y68 Section, &Keep changes
+Gui, Add, Button, ys, &Revert
 ; Advanced section.
-Gui, Add, Button, , &Advanced
+Gui, Add, Button, xm, &Advanced
 Gui, Add, GroupBox
 Gui, Add, TreeView
 P1 := TV_Add("Advanced")
 P1C1 := TV_Add("stuff goes here", P1)
 Gui, Add, Hotkey, vChosenHotkey
 ; Show GUI.
-Gui, Show, , ShiftGameWindow, ShiftGameWindow
+Gui, Show, x800 y800 w340, ShiftGameWindow - "%WinTitle%"
 return
 
 
-; [Yes]: Moving the window was successful. Exit.
-ButtonYes:
+; [Keep changes]: Moving the window was successful. Exit.
+ButtonKeepchanges:
 ExitApp
 
 
 ; [No]: Undo any changes and end.
-ButtonNo:
+ButtonRevert:
 WinMove, %WinTitle%, , %WinX%, %WinY%
 ExitApp
 
@@ -175,6 +177,8 @@ TO DO:
 
 
 ShiftGameWindow Version History:
-0.1 - 
+0.03 - Started GUI design.
+0.02 - Added Help Menu.
+0.01 - Starting over based on previous ShiftGameWindow Alpha.
 ************************************************************************************************
 */

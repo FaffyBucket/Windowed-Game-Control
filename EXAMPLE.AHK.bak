@@ -8,16 +8,35 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 
 
+; GUI.
+; GUI settings.
+Gui, Color, FFFFFF
+Gui, Font, s11
+; Help Menu.
+Menu, HelpMenu, Add, &How to use ShiftGameWindow, HelpHowTo
+Menu, HelpMenu, Add, &Tips and troubleshooting, HelpTips
+Menu, HelpMenu, Add ; Separator line.
+Menu, HelpMenu, Add, &About ShiftGameWindow, HelpAbout
+Menu, MyMenuBar, Add, &Help, :HelpMenu
+Gui, Menu, MyMenuBar
+; Main section.
+Msg1 =
+( LTrim Join`s
+	The active window has been shifted. Do you want
+	`nto keep this window size and position?
+)
+Gui, Add, GroupBox, ,
+Gui, Add, GroupBox, x1 y1 w100 h100, .
+Gui, Add, Text, , %Msg1%
+Gui, Add, Button, Default, &Keep changes
+Gui, Add, Button, , &Revert
+; Advanced section.
+Gui, Add, Button, , &Advanced
+Gui, Add, GroupBox
 Gui, Add, TreeView
-P1 := TV_Add("First parent")
-;P1C1 := TV_Add("Parent 1's first child", P1)  ; Specify P1 to be this item's parent.
-P2 := TV_Add("Second parent")
-P2C1 := TV_Add("Parent 2's first child", P2)
-P2C2 := TV_Add("Parent 2's second child", P2)
-P2C2C1 := TV_Add("Child 2's first child", P2C2)
-
-Gui, Show  ; Show the window and its TreeView.
+P1 := TV_Add("Advanced")
+P1C1 := TV_Add("stuff goes here", P1)
+Gui, Add, Hotkey, vChosenHotkey
+; Show GUI.
+Gui, Show, w320, ShiftGameWindow - "%WinTitle%"
 return
-
-GuiClose:  ; Exit the script when the user closes the TreeView's GUI window.
-ExitApp
