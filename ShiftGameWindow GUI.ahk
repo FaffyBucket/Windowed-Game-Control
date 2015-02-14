@@ -48,17 +48,82 @@ X := (MonX - ((WinWidth - MonWidth) / 2))
 Y := (MonY - (WinHeight - MonHeight - (((WinWidth - MonWidth) / 2))))
 WinMove, %WinTitle%, , %X%, %Y%
 
-Gui, Add, Text,, Do you want to keep this window size and position?
+; GUI.
+Menu, HelpMenu, Add, &How to use ShiftGameWindow, HelpHowTo
+Menu, HelpMenu, Add, &Tips and troubleshooting, HelpTips
+Menu, MyMenuBar, Add, &Help, :HelpMenu
+Gui, Menu, MyMenuBar
+Msg1 =
+( LTrim Join`s
+	The active window has been shifted ("%WinTitle%").
+	`n
+	`nDo you want to keep this window size and position?
+)
+Gui, Color, FFFFFF
+Gui, Font, s11
+Gui, Add, Text, , %Msg1%
+Gui, Add, GroupBox
 Gui, Add, Button, Default, &Yes
 Gui, Add, Button, , &No
-Gui, Show, , ShiftGameWindow
+Gui, Add, Button, , &Advanced
+Gui, Add, GroupBox
+Gui, Add, TreeView
+P1 := TV_Add("Advanced")
+P1C1 := TV_Add("stuff goes here", P1)
+Gui, Add, Hotkey, vChosenHotkey
+Gui, Show, NoActivate, ShiftGameWindow, ShiftGameWindow
 return
 
+; [Yes]: Moving the window was successful. Exit.
 ButtonYes:
 ExitApp
 
+; [No]: Undo any changes and end.
 ButtonNo:
+WinMove, %WinTitle%, , %WinX%, %WinY%
+ExitApp
 
+; HelpMenu
+HelpHowTo:
+HelpMsgHowto =
+( LTrim Join`s
+	How to use ShiftGameWindow:
+	ShiftGameWindow is a tool for repositioning windowed games running at
+	native resolution. Assign it to a keyboard shortcut so that you can run it
+	at the press of a button while in game. When it launches it will reposition
+	the game to fill your screen.
+	
+	The controls:
+	`n - Yes: Saves the current window position and exits ShiftGameWindow.
+	`n - No: Exits ShiftGameWindow without saving. Closing ShiftGameWindow will
+	also exit without saving.
+	`n - Advanced: Advanced options.
+	`n - Help: Help using ShiftGameWindow.
+)
+
+HelpTips:
+HelpMsgTips =
+( LTrim Join`s
+	Tips on using ShiftGameWindow:
+	`n - Make sure that the TOP-LEFT corner of the game window is on the
+	correct monitor. Move it to the center to be sure.
+	`n - Make sure that the TOP-LEFT corner of the game you want to reposition
+	is clearly on the monitor workspace. If it is on/near the edge of the
+	screen, or the StartMenu/Taskbar area, ShiftGameWindow will	have problems
+	detecting the window.
+	`n - Make sure that the game resolution MATCHES the monitor resolution.
+	`n - Some games do not display at the correct resolution when in windowed
+	mode. This can usually be corrected by restarting the game. However, if the
+	game won't display at the correct resolution, then ShiftGameWindow may not
+	work. You can try resizing it in the Advanced menu.
+)
+
+; [Advanced]:
+ButtonAdvanced:
+; - Move to next window.
+; - Move to 100x100.
+; - Move to 100x100 on next window.
+; - Resize window.
 
 
 

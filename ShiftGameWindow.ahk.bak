@@ -54,11 +54,14 @@ Gui, Add, Button, , &No
 Gui, Show, , ShiftGameWindow
 return
 
+; [Yes]: Moving the window was successful. Exit.
 ButtonYes:
 ExitApp
 
+; [No]: Undo any changes and end.
 ButtonNo:
-
+WinMove, %WinTitle%, , %WinX%, %WinY%
+ExitApp
 
 
 

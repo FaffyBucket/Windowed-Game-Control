@@ -8,32 +8,16 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 
 
-Gui, +Resize
-Gui, Add, Button, default, &Load New Image
-Gui, Add, Radio, ym+5 x+10 vRadio checked, Load &actual size
-Gui, Add, Radio, ym+5 x+10, Load to &fit screen
-Gui, Add, Pic, xm vPic
-Gui, Show
+Gui, Add, TreeView
+P1 := TV_Add("First parent")
+P1C1 := TV_Add("Parent 1's first child", P1)  ; Specify P1 to be this item's parent.
+P2 := TV_Add("Second parent")
+P2C1 := TV_Add("Parent 2's first child", P2)
+P2C2 := TV_Add("Parent 2's second child", P2)
+P2C2C1 := TV_Add("Child 2's first child", P2C2)
+
+Gui, Show  ; Show the window and its TreeView.
 return
 
-ButtonLoadNewImage:
-FileSelectFile, file,,, Select an image:, Images (*.gif; *.jpg; *.bmp; *.png; *.tif; *.ico; *.cur; *.ani; *.exe; *.dll)
-if file =
-    return
-Gui, Submit, NoHide ; Save the values of the radio buttons.
-if Radio = 1  ; Display image at its actual size.
-{
-    Width = 0
-    Height = 0
-}
-else ; Second radio is selected: Resize the image to fit the screen.
-{
-    Width := A_ScreenWidth - 28  ; Minus 28 to allow room for borders and margins inside.
-    Height = -1  ; "Keep aspect ratio" seems best.
-}
-GuiControl,, Pic, *w%width% *h%height% %file%  ; Load the image.
-Gui, Show, xCenter y0 AutoSize, %file%  ; Resize the window to match the picture size.
-return
-
-GuiClose:
+GuiClose:  ; Exit the script when the user closes the TreeView's GUI window.
 ExitApp
