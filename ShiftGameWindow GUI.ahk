@@ -1,17 +1,18 @@
 /*
 *******************************************************************************
-* ShiftGameWindow                                                             *
+* Windowed Game Control                                                       *
 *                                                                             *
-* Version:              0.05 (version history at the bottom of this script)   *
+* Version:              0.06 (version history at the bottom of this script)   *
 * AutoHotkey Version:   1.1                                                   *
 * Language:             English                                               *
 * Platform:             Windows 7, 8                                          *
 * Author:               www.twitter.com/matthiew                              *
 *                                                                             *
 * Script Function:      This is designed for video games in windowed mode.	  *
-*						Assign a keyboard shortcut to run ShiftGameWindow,    *
-*						then when you press the shortcut key ShiftGameWindow  *
-*						will reposition the active window to fill the screen. *
+*						Assign a keyboard shortcut to run Windowed Game	      *
+*						Control, then when you press the shortcut key 		  *
+*						Windowed Game Control will reposition the active	  *
+*                       window to fill the screen. 							  *
 *					   														  *
 *******************************************************************************
 */
@@ -61,10 +62,10 @@ Gui, 2:+MinSize340x296 +Resize	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 Gui, 2:Color, FFFFFF
 Gui, 2:Font, s11
 ; Help Menu.
-Menu, HelpMenu, Add, &How to use ShiftGameWindow, HelpHowTo
+Menu, HelpMenu, Add, &How to use Windowed Game Control, HelpHowTo
 Menu, HelpMenu, Add, &Tips and troubleshooting, HelpTips
 Menu, HelpMenu, Add ; Separator line.
-Menu, HelpMenu, Add, &About ShiftGameWindow, HelpAbout
+Menu, HelpMenu, Add, &About Windowed Game Control, HelpAbout
 Menu, MyMenuBar, Add, &Help, :HelpMenu
 Gui, 2:Menu, MyMenuBar
 ; Main section.
@@ -84,7 +85,7 @@ Gui, 2:Add, Checkbox, vAdvanced xm, &Advanced features.
 Advanced_TT := "More features if the automatic window shift isn't enough."
 Gui, 2:Add, GroupBox
 ; Show GUI.
-Gui, 2:Show, x800 y800 w340, ShiftGameWindow - "%WinTitle%"	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Gui, 2:Show, x800 y800 w340, Windowed Game Control - "%WinTitle%"	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 OnMessage(0x200, "WM_MOUSEMOVE")	; Tooltips
 return
 
@@ -102,9 +103,9 @@ ExitApp
 
 
 
-; How to use ShiftGameWindow (Gui 3)
+; How to use Windowed Game Control (Gui 3)
 HelpHowTo:
-WinGetPos, SGWX, SGWY, , , ShiftGameWindow
+WinGetPos, SGWX, SGWY, , , Windowed Game Control
 SGWX := SGWX - 60
 SGWY := SGWY + 20
 Gui, 3:New
@@ -112,22 +113,25 @@ Gui, 3:Color, FFFFFF
 Gui, 3:Font, s11
 HelpMsgHowTo =
 ( LTrim Join`s
-	ShiftGameWindow is a tool for repositioning windowed games running at
-	`nnative resolution. Assign it to a keyboard shortcut so that you can run
-	`nit at the press of a button while in game. When it launches it will
+	 Windowed Game Control is a tool for repositioning windowed games running
+	`nat native resolution. Assign it to a keyboard shortcut so that you can
+	`nrun it at the press of a button while in game. When it launches it will
 	`nreposition the game to fill your screen.
 	`n
+	`n
 	`nThe controls:
-	`n - YES: Saves the current window position and exits ShiftGameWindow.
-	`n - NO: Exits ShiftGameWindow without saving. Closing ShiftGameWindow will
-	`nalso exit without saving.
-	`n - ADVANCED: Advanced options.
+	`n
+	`nYES:  Saves the current window position and exits WGC.
+	`n
+	`nNO:  Exits WGC without saving. Closing WGC also exits without saving.
+	`n
+	`nADVANCED:  Advanced options.
 	`n
 )
 Gui, 3:Add, Text, , %HelpMsgHowTo%
 Gui, 3:Add, Button, vOK x220, &OK
 OK_TT :=
-Gui, 3:Show, x%SGWX% y%SGWY%, How to use ShiftGameWindow
+Gui, 3:Show, x%SGWX% y%SGWY%, How to use Windowed Game Control
 return
 
 3ButtonOK:
@@ -141,7 +145,7 @@ return
 
 ; Tips and troubleshooting (GUI 4)
 HelpTips:
-WinGetPos, SGWX, SGWY, , , ShiftGameWindow
+WinGetPos, SGWX, SGWY, , , Windowed Game Control
 SGWX := SGWX - 60
 SGWY := SGWY + 20
 Gui, 4:New
@@ -149,8 +153,8 @@ Gui, 4:Color, FFFFFF
 Gui, 4:Font, s11
 HelpMsgTips =
 ( LTrim Join
-	`nAssign ShiftGameWindow to a keyboard shortcut so you can launch it in
-	`ngame.
+	`nAssign Windowed Game Control to a keyboard shortcut so you can launch it
+	`nin game.
 	`n
 	`nMake sure that the TOP-LEFT corner of the game window is on the correct
 	`nmonitor. Move it to the center to be sure.
@@ -158,15 +162,15 @@ HelpMsgTips =
 	`nMake sure that the TOP-LEFT corner of the game you want to reposition is
 	`nclearly on the monitor workspace. If it is on/near the edge of the screen
 	, or
-	`nthe StartMenu/Taskbar area, ShiftGameWindow will have problems
+	`nthe StartMenu/Taskbar area, Windowed Game Control will have problems
 	`ndetecting the window.
 	`n
 	`nMake sure that the game resolution MATCHES the monitor resolution.
 	`n
 	`nSome games do not display at the correct resolution when in windowed
 	`nmode. This can usually be corrected by restarting the game. However, if
-	`nthe game won't display at the correct resolution, then ShiftGameWindow
-	`nmay not work. You can try resizing it in the Advanced section.
+	`nthe game won't display at the correct resolution, then Windowed Game
+	`nControl may not work. You can try resizing it in the Advanced section.
 	`n
 )
 Gui, 4:Add, Text, , %HelpMsgTips%
@@ -184,9 +188,9 @@ return
 
 
 
-; About ShiftGameWindow (GUI 5)
+; About Windowed Game Control (GUI 5)
 HelpAbout:
-WinGetPos, SGWX, SGWY, , , ShiftGameWindow
+WinGetPos, SGWX, SGWY, , , Windowed Game Control
 SGWX := SGWX - 60
 SGWY := SGWY + 20
 Gui, 5:New
@@ -194,12 +198,12 @@ Gui, 5:Color, FFFFFF
 Gui, 5:Font, s11
 HelpMsgAbout = 
 (
-	Version 0.05
+	Version 0.06
 )
 Gui, 5:Add, Text, , %HelpMsgAbout%
 Gui, 5:Add, Button, vOK x220, &OK
 OK_TT :=
-Gui, 5:Show, x%SGWX% y%SGWY%, About ShiftGameWindow
+Gui, 5:Show, x%SGWX% y%SGWY%, About Windowed Game Control
 return
 
 5ButtonOK:
@@ -214,7 +218,7 @@ return
 ; Tooltips.
 WM_MOUSEMOVE()
 {
-    static CurrControl, PrevControl, _TT  ; _TT is kept blank for use by the ToolTip command below.
+    static CurrControl, PrevControl, _TT 
     CurrControl := A_GuiControl
     If (CurrControl <> PrevControl and not InStr(CurrControl, " "))
     {
@@ -226,7 +230,7 @@ WM_MOUSEMOVE()
 
     DisplayToolTip:
     SetTimer, DisplayToolTip, Off
-    ToolTip % %CurrControl%_TT  ; The leading percent sign tell it to use an expression.
+    ToolTip % %CurrControl%_TT
     SetTimer, RemoveToolTip, 3000
     return
 
@@ -240,16 +244,16 @@ WM_MOUSEMOVE()
 
 
 /*
-************************************************************************************************
-ShiftGameWindow Known Issues:
- - If the top-left corner of the window is off-screen, ShiftGameWindow can't reposition the
-   window properly.
- - If the top-left corner of the window is on or under the Taskbar, ShiftGameWindow can't
-   reposition the window properly.
- - Sometimes a game in windowed mode won't render at the correct resolution. ShiftGameWindow
-   will process these normally, but the results won't be normal. Usually when this happens the
-   game just needs to be restarted. I've seen this behaviour in COD4, CODWaW, Loadout, and
-   Titanfall.
+*******************************************************************************
+Windowed Game Control Known Issues:
+ - If the top-left corner of the window is off-screen, Windowed Game Control
+   can't reposition the window properly.
+ - If the top-left corner of the window is on or under the Taskbar, Windowed
+   Game Control can't reposition the window properly.
+ - Sometimes a game in windowed mode won't render at the correct resolution.
+   Windowed Game Control will process these normally, but the results won't be
+   normal. Usually when this happens the game just needs to be restarted. I've
+   seen this behaviour in COD4, CODWaW, Loadout, and Titanfall.
    
 
 TO DO:
@@ -264,7 +268,8 @@ TO DO:
  - Compile.
 
 
-ShiftGameWindow Version History:
+Windowed Game Control Version History:
+0.06 - Renamed to Windowed Game Control.
 0.05 - Changed Help messages to additional GUIs with relative positions.
 0.04 - Added GuiClose and GuiEscape.
 0.03 - Started GUI design.
