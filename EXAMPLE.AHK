@@ -8,104 +8,119 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 
 
-; GUI.
-; GUI settings.
-Gui, Color, FFFFFF
-Gui, Font, s11
-; Help Menu.
-Menu, HelpMenu, Add, &How to use ShiftGameWindow, HelpHowTo
-Menu, HelpMenu, Add, &Tips and troubleshooting, HelpTips
-Menu, HelpMenu, Add ; Separator line.
-Menu, HelpMenu, Add, &About ShiftGameWindow, HelpAbout
+; Example: Simple text editor with menu bar.
+
+; Create the sub-menus for the menu bar:
+Menu, FileMenu, Add, &New, FileNew
+Menu, FileMenu, Add, &Open, FileOpen
+Menu, FileMenu, Add, &Save, FileSave
+Menu, FileMenu, Add, Save &As, FileSaveAs
+Menu, FileMenu, Add  ; Separator line.
+Menu, FileMenu, Add, E&xit, FileExit
+Menu, HelpMenu, Add, &About, HelpAbout
+
+; Create the menu bar by attaching the sub-menus to it:
+Menu, MyMenuBar, Add, &File, :FileMenu
 Menu, MyMenuBar, Add, &Help, :HelpMenu
+
+; Attach the menu bar to the window:
 Gui, Menu, MyMenuBar
-; Main section.
-Msg1 =
-( LTrim Join`s
-	The active window has been shifted. Do you want
-	`nto keep this window size and position?
-)
-Gui, Add, GroupBox, ,
-Gui, Add, GroupBox, x1 y1 w100 h100, .
-Gui, Add, Text, , %Msg1%
-Gui, Add, Button, Default, &Keep changes
-Gui, Add, Button, , &Revert
-; Advanced section.
-Gui, Add, Button, , &Advanced
-Gui, Add, GroupBox
-Gui, Add, TreeView
-P1 := TV_Add("Advanced")
-P1C1 := TV_Add("stuff goes here", P1)
-Gui, Add, Hotkey, vChosenHotkey
-; Show GUI.
-Gui, Show, w320, ShiftGameWindow - "%WinTitle%"
+
+; Create the main Edit control and display the window:
+Gui, +Resize  ; Make the window resizable.
+Gui, Add, Edit, vMainEdit WantTab W600 R20
+Gui, Show,, Untitled
+CurrentFileName =  ; Indicate that there is no current file.
 return
 
-
-; [Keep changes]: Moving the window was successful. Exit.
-ButtonKeepchanges:
-ExitApp
-
-
-; [No]: Undo any changes and end.
-ButtonRevert:
-WinMove, %WinTitle%, , %WinX%, %WinY%
-ExitApp
-
-
-; [Advanced]:
-ButtonAdvanced:
-; - Move to next window.
-; - Move to 100x100.
-; - Move to 100x100 on next window.
-; - Resize window.
-
-
-; Help Menu
-HelpHowTo:
-HelpMsgHowTo =
-( LTrim Join`s
-	ShiftGameWindow is a tool for repositioning windowed games running at
-	native resolution. Assign it to a keyboard shortcut so that you can run it
-	at the press of a button while in game. When it launches it will reposition
-	the game to fill your screen.
-	`n
-	`nThe controls:
-	`n - YES: Saves the current window position and exits ShiftGameWindow.
-	`n - NO: Exits ShiftGameWindow without saving. Closing ShiftGameWindow will
-	also exit without saving.
-	`n - ADVANCED: Advanced options.
-)
-MsgBox, , How to use ShiftGameWindow, %HelpMsgHowTo%
+FileNew:
+GuiControl,, MainEdit  ; Clear the Edit control.
 return
 
-HelpTips:
-HelpMsgTips =
-( LTrim Join`s
-	`nAssign ShiftGameWindow to a keyboard shortcut so you can launch it in
-	game.
-	`nMake sure that the TOP-LEFT corner of the game window is on the correct
-	monitor. Move it to the center to be sure.
-	`n
-	`nMake sure that the TOP-LEFT corner of the game you want to reposition is
-	clearly on the monitor workspace. If it is on/near the edge of the screen,
-	or the StartMenu/Taskbar area, ShiftGameWindow will have problems detecting
-	the window.
-	`n
-	`nMake sure that the game resolution MATCHES the monitor resolution.
-	`n
-	`nSome games do not display at the correct resolution when in windowed
-	mode. This can usually be corrected by restarting the game. However, if the
-	game won't display at the correct resolution, then ShiftGameWindow may not
-	work. You can try resizing it in the Advanced section.
-)
-MsgBox, , Tips and troubleshooting, %HelpMsgTips%
+FileOpen:
+Gui +OwnDialogs  ; Force the user to dismiss the FileSelectFile dialog before returning to the main window.
+FileSelectFile, SelectedFileName, 3,, Open File, Text Documents (*.txt)
+if SelectedFileName =  ; No file selected.
+    return
+Gosub FileRead
+return
+
+FileRead:  ; Caller has set the variable SelectedFileName for us.
+FileRead, MainEdit, %SelectedFileName%  ; Read the file's contents into the variable.
+if ErrorLevel
+{
+    MsgBox Could not open "%SelectedFileName%".
+    return
+}
+GuiControl,, MainEdit, %MainEdit%  ; Put the text into the control.
+CurrentFileName = %SelectedFileName%
+Gui, Show,, %CurrentFileName%   ; Show file name in title bar.
+return
+
+FileSave:
+if CurrentFileName =   ; No filename selected yet, so do Save-As instead.
+    Goto FileSaveAs
+Gosub SaveCurrentFile
+return
+
+FileSaveAs:
+Gui +OwnDialogs  ; Force the user to dismiss the FileSelectFile dialog before returning to the main window.
+FileSelectFile, SelectedFileName, S16,, Save File, Text Documents (*.txt)
+if SelectedFileName =  ; No file selected.
+    return
+CurrentFileName = %SelectedFileName%
+Gosub SaveCurrentFile
+return
+
+SaveCurrentFile:  ; Caller has ensured that CurrentFileName is not blank.
+IfExist %CurrentFileName%
+{
+    FileDelete %CurrentFileName%
+    if ErrorLevel
+    {
+        MsgBox The attempt to overwrite "%CurrentFileName%" failed.
+        return
+    }
+}
+GuiControlGet, MainEdit  ; Retrieve the contents of the Edit control.
+FileAppend, %MainEdit%, %CurrentFileName%  ; Save the contents to the file.
+; Upon success, Show file name in title bar (in case we were called by FileSaveAs):
+Gui, Show,, %CurrentFileName%
 return
 
 HelpAbout:
-HelpMsgAbout = 
-(
-	Version 0.02
-)
-MsgBox, , About ShiftGameWindow, %HelpMsgAbout%
+Gui, About:+owner1  ; Make the main window (Gui #1) the owner of the "about box".
+Gui +Disabled  ; Disable main window.
+Gui, About:Add, Text,, Text for about box.
+Gui, About:Add, Button, Default, OK
+Gui, About:Show
 return
+
+AboutButtonOK:  ; This section is used by the "about box" above.
+AboutGuiClose:
+AboutGuiEscape:
+Gui, 1:-Disabled  ; Re-enable the main window (must be done prior to the next step).
+Gui Destroy  ; Destroy the about box.
+return
+
+GuiDropFiles:  ; Support drag & drop.
+Loop, Parse, A_GuiEvent, `n
+{
+    SelectedFileName = %A_LoopField%  ; Get the first file only (in case there's more than one).
+    break
+}
+Gosub FileRead
+return
+
+GuiSize:
+if ErrorLevel = 1  ; The window has been minimized.  No action needed.
+    return
+; Otherwise, the window has been resized or maximized. Resize the Edit control to match.
+NewWidth := A_GuiWidth - 20
+NewHeight := A_GuiHeight - 20
+GuiControl, Move, MainEdit, W%NewWidth% H%NewHeight%
+return
+
+FileExit:     ; User chose "Exit" from the File menu.
+GuiClose:  ; User closed the window.
+ExitApp

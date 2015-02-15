@@ -8,35 +8,34 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 
 
-; GUI.
-; GUI settings.
-Gui, Color, FFFFFF
-Gui, Font, s11
-; Help Menu.
-Menu, HelpMenu, Add, &How to use ShiftGameWindow, HelpHowTo
-Menu, HelpMenu, Add, &Tips and troubleshooting, HelpTips
-Menu, HelpMenu, Add ; Separator line.
-Menu, HelpMenu, Add, &About ShiftGameWindow, HelpAbout
-Menu, MyMenuBar, Add, &Help, :HelpMenu
-Gui, Menu, MyMenuBar
-; Main section.
-Msg1 =
-( LTrim Join`s
-	The active window has been shifted. Do you want
-	`nto keep this window size and position?
-)
-Gui, Add, GroupBox, ,
-Gui, Add, GroupBox, x1 y1 w100 h100, .
-Gui, Add, Text, , %Msg1%
-Gui, Add, Button, Default, &Keep changes
-Gui, Add, Button, , &Revert
-; Advanced section.
-Gui, Add, Button, , &Advanced
-Gui, Add, GroupBox
-Gui, Add, TreeView
-P1 := TV_Add("Advanced")
-P1C1 := TV_Add("stuff goes here", P1)
-Gui, Add, Hotkey, vChosenHotkey
-; Show GUI.
-Gui, Show, w320, ShiftGameWindow - "%WinTitle%"
+; Example: Simple image viewer:
+
+Gui, +Resize
+Gui, Add, Button, default, &Load New Image
+Gui, Add, Radio, ym+5 x+10 vRadio checked, Load &actual size
+Gui, Add, Radio, ym+5 x+10, Load to &fit screen
+Gui, Add, Pic, xm vPic
+Gui, Show
 return
+
+ButtonLoadNewImage:
+FileSelectFile, file,,, Select an image:, Images (*.gif; *.jpg; *.bmp; *.png; *.tif; *.ico; *.cur; *.ani; *.exe; *.dll)
+if file =
+    return
+Gui, Submit, NoHide ; Save the values of the radio buttons.
+if Radio = 1  ; Display image at its actual size.
+{
+    Width = 0
+    Height = 0
+}
+else ; Second radio is selected: Resize the image to fit the screen.
+{
+    Width := A_ScreenWidth - 28  ; Minus 28 to allow room for borders and margins inside.
+    Height = -1  ; "Keep aspect ratio" seems best.
+}
+GuiControl,, Pic, *w%width% *h%height% %file%  ; Load the image.
+Gui, Show, xCenter y0 AutoSize, %file%  ; Resize the window to match the picture size.
+return
+
+GuiClose:
+ExitApp
