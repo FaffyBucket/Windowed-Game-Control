@@ -2,7 +2,7 @@
 *******************************************************************************
 * ShiftGameWindow                                                             *
 *                                                                             *
-* Version:              0.03 (version history at the bottom of this script)   *
+* Version:              0.04 (version history at the bottom of this script)   *
 * AutoHotkey Version:   1.1                                                   *
 * Language:             English                                               *
 * Platform:             Windows 7, 8                                          *
@@ -91,8 +91,10 @@ ButtonKeepchanges:
 ExitApp
 
 
-; [No]: Undo any changes and end.
+; [Revert]: Undo any changes and end.
 ButtonRevert:
+GuiClose:
+GuiEscape:
 WinMove, %WinTitle%, , %WinX%, %WinY%
 ExitApp
 
@@ -171,12 +173,16 @@ ShiftGameWindow Known Issues:
    
 
 TO DO:
- - Recreate ShiftGameWindow with a proper GUI.
+ - Advanced section.
+ - Remember window position.
+ - MsgBox position.
+ - Tooltips.
  - Create icon.
  - Compile.
 
 
 ShiftGameWindow Version History:
+0.04 - Added GuiClose and GuiEscape.
 0.03 - Started GUI design.
 0.02 - Added Help Menu.
 0.01 - Starting over based on previous ShiftGameWindow Alpha.
