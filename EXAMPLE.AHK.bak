@@ -8,34 +8,119 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 
 
-; Example: Simple image viewer:
+; Example: Simple text editor with menu bar.
 
-Gui, +Resize
-Gui, Add, Button, default, &Load New Image
-Gui, Add, Radio, ym+5 x+10 vRadio checked, Load &actual size
-Gui, Add, Radio, ym+5 x+10, Load to &fit screen
-Gui, Add, Pic, xm vPic
-Gui, Show
+; Create the sub-menus for the menu bar:
+Menu, FileMenu, Add, &New, FileNew
+Menu, FileMenu, Add, &Open, FileOpen
+Menu, FileMenu, Add, &Save, FileSave
+Menu, FileMenu, Add, Save &As, FileSaveAs
+Menu, FileMenu, Add  ; Separator line.
+Menu, FileMenu, Add, E&xit, FileExit
+Menu, HelpMenu, Add, &About, HelpAbout
+
+; Create the menu bar by attaching the sub-menus to it:
+Menu, MyMenuBar, Add, &File, :FileMenu
+Menu, MyMenuBar, Add, &Help, :HelpMenu
+
+; Attach the menu bar to the window:
+Gui, Menu, MyMenuBar
+
+; Create the main Edit control and display the window:
+Gui, +Resize  ; Make the window resizable.
+Gui, Add, Edit, vMainEdit WantTab W600 R20
+Gui, Show,, Untitled
+CurrentFileName =  ; Indicate that there is no current file.
 return
 
-ButtonLoadNewImage:
-FileSelectFile, file,,, Select an image:, Images (*.gif; *.jpg; *.bmp; *.png; *.tif; *.ico; *.cur; *.ani; *.exe; *.dll)
-if file =
+FileNew:
+GuiControl,, MainEdit  ; Clear the Edit control.
+return
+
+FileOpen:
+Gui +OwnDialogs  ; Force the user to dismiss the FileSelectFile dialog before returning to the main window.
+FileSelectFile, SelectedFileName, 3,, Open File, Text Documents (*.txt)
+if SelectedFileName =  ; No file selected.
     return
-Gui, Submit, NoHide ; Save the values of the radio buttons.
-if Radio = 1  ; Display image at its actual size.
-{
-    Width = 0
-    Height = 0
-}
-else ; Second radio is selected: Resize the image to fit the screen.
-{
-    Width := A_ScreenWidth - 28  ; Minus 28 to allow room for borders and margins inside.
-    Height = -1  ; "Keep aspect ratio" seems best.
-}
-GuiControl,, Pic, *w%width% *h%height% %file%  ; Load the image.
-Gui, Show, xCenter y0 AutoSize, %file%  ; Resize the window to match the picture size.
+Gosub FileRead
 return
 
-GuiClose:
+FileRead:  ; Caller has set the variable SelectedFileName for us.
+FileRead, MainEdit, %SelectedFileName%  ; Read the file's contents into the variable.
+if ErrorLevel
+{
+    MsgBox Could not open "%SelectedFileName%".
+    return
+}
+GuiControl,, MainEdit, %MainEdit%  ; Put the text into the control.
+CurrentFileName = %SelectedFileName%
+Gui, Show,, %CurrentFileName%   ; Show file name in title bar.
+return
+
+FileSave:
+if CurrentFileName =   ; No filename selected yet, so do Save-As instead.
+    Goto FileSaveAs
+Gosub SaveCurrentFile
+return
+
+FileSaveAs:
+Gui +OwnDialogs  ; Force the user to dismiss the FileSelectFile dialog before returning to the main window.
+FileSelectFile, SelectedFileName, S16,, Save File, Text Documents (*.txt)
+if SelectedFileName =  ; No file selected.
+    return
+CurrentFileName = %SelectedFileName%
+Gosub SaveCurrentFile
+return
+
+SaveCurrentFile:  ; Caller has ensured that CurrentFileName is not blank.
+IfExist %CurrentFileName%
+{
+    FileDelete %CurrentFileName%
+    if ErrorLevel
+    {
+        MsgBox The attempt to overwrite "%CurrentFileName%" failed.
+        return
+    }
+}
+GuiControlGet, MainEdit  ; Retrieve the contents of the Edit control.
+FileAppend, %MainEdit%, %CurrentFileName%  ; Save the contents to the file.
+; Upon success, Show file name in title bar (in case we were called by FileSaveAs):
+Gui, Show,, %CurrentFileName%
+return
+
+HelpAbout:
+Gui, About:+owner1  ; Make the main window (Gui #1) the owner of the "about box".
+Gui +Disabled  ; Disable main window.
+Gui, About:Add, Text,, Text for about box.
+Gui, About:Add, Button, Default, OK
+Gui, About:Show
+return
+
+AboutButtonOK:  ; This section is used by the "about box" above.
+AboutGuiClose:
+AboutGuiEscape:
+Gui, 1:-Disabled  ; Re-enable the main window (must be done prior to the next step).
+Gui Destroy  ; Destroy the about box.
+return
+
+GuiDropFiles:  ; Support drag & drop.
+Loop, Parse, A_GuiEvent, `n
+{
+    SelectedFileName = %A_LoopField%  ; Get the first file only (in case there's more than one).
+    break
+}
+Gosub FileRead
+return
+
+GuiSize:
+if ErrorLevel = 1  ; The window has been minimized.  No action needed.
+    return
+; Otherwise, the window has been resized or maximized. Resize the Edit control to match.
+NewWidth := A_GuiWidth - 20
+NewHeight := A_GuiHeight - 20
+GuiControl, Move, MainEdit, W%NewWidth% H%NewHeight%
+return
+
+FileExit:     ; User chose "Exit" from the File menu.
+GuiClose:  ; User closed the window.
 ExitApp
