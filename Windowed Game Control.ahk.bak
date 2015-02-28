@@ -2,7 +2,7 @@
 *******************************************************************************
 * Windowed Game Control                                                       *
 *                                                                             *
-* Version:              0.08 (version history at the bottom of this script)   *
+* Version:              0.10 (version history at the bottom of this script)   *
 * AutoHotkey Version:   1.1                                                   *
 * Language:             English                                               *
 * Platform:             Windows 7, 8                                          *
@@ -28,37 +28,40 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 
 
-; Load settings from the registry.
+; MAIN
 RegRead, AdvancedCheckbox, HKCU, Software\FaffyBucket\Windowed Game Control
 	, AdvancedCheckbox
-
-
-
-
-; Get details of the active window and monitors.
 WinGetActiveTitle, WinTitle
-WinGetPos, WinX, WinY, WinWidth, WinHeight, %WinTitle%
-SysGet, MonitorCount, MonitorCount
-Loop, %MonitorCount%	
+WinGetPos, OriginalX, OriginalY, OriginalWidth, OriginalHeight, %WinTitle%
+AutoReposition(WinTitle)
+
+
+
+
+; Automatically move the active window to fill the monitor.
+AutoReposition(WinTitle)
 {
-	SysGet Monitor, Monitor, %A_Index%
-	if ((MonitorLeft < WinX) && (WinX < MonitorRight)
-	    && (MonitorTop < WinY) && (WinY < MonitorBottom))
+	; Get details of the active window and monitors.
+	WinGetPos, WinX, WinY, WinWidth, WinHeight, %WinTitle%
+	SysGet, MonitorCount, MonitorCount
+	Loop, %MonitorCount%	
 	{
-		MonX := MonitorLeft
-		MonY := MonitorTop
-		MonWidth := MonitorRight - MonitorLeft
-		MonHeight := MonitorBottom - MonitorTop
+		SysGet Monitor, Monitor, %A_Index%
+		if ((MonitorLeft < WinX) && (WinX < MonitorRight)
+			&& (MonitorTop < WinY) && (WinY < MonitorBottom))
+		{
+			MonX := MonitorLeft
+			MonY := MonitorTop
+			MonWidth := MonitorRight - MonitorLeft
+			MonHeight := MonitorBottom - MonitorTop
+		}
 	}
+	; Move the window.
+	X := (MonX - ((WinWidth - MonWidth) / 2))
+	Y := (MonY - (WinHeight - MonHeight - (((WinWidth - MonWidth) / 2))))
+	WinMove, %WinTitle%, , %X%, %Y%
+	return
 }
-
-
-
-
-; Automatically move the active window on start.
-X := (MonX - ((WinWidth - MonWidth) / 2))
-Y := (MonY - (WinHeight - MonHeight - (((WinWidth - MonWidth) / 2))))
-WinMove, %WinTitle%, , %X%, %Y%
 
 
 
@@ -78,7 +81,7 @@ Gui, 2:Menu, MyMenuBar
 ; Main section.
 Msg1 =
 ( LTrim Join`s
-	The active window has been shifted. Do you want
+	The active window has been repositioned. Do you want
 	`nto keep this window size and position?
 )
 Gui, 2:Add, GroupBox, w316 h104,
@@ -87,12 +90,12 @@ Gui, 2:Add, Button, Default Section vKeepChanges x146 y68, &Keep changes
 KeepChanges_TT := "Save new window position and exit."
 Gui, 2:Add, Button, vRevert ys, &Revert
 Revert_TT := "Undo all changes and exit."
-if (AdvancedCheckbox == 0)
+if (AdvancedCheckbox == 0)	
 {
 	Gui, 2:Add, GroupBox, Section x13 y117 w154 h49,
 	Gui, 2:Add, Checkbox
-		, gAdvancedFeatures vAdvancedCheckbox xp+12 yp+20, &Advanced features.
-	AdvancedCheckbox_TT := "More features if the automatic window shift isn't enough."
+		, gAdvancedControls vAdvancedCheckbox xp+12 yp+20, &Advanced controls.
+	AdvancedCheckbox_TT := "More tools to control game windows."
 	; Show GUI.
 	Gui, 2:Show, x800 y800 w342 h180, Windowed Game Control - "%WinTitle%"	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 }
@@ -101,153 +104,185 @@ else
 {
 	Gui, 2:Add, GroupBox, Section x13 y117 w316 h200,
 	Gui, 2:Add, Checkbox
-		, Checked gAdvancedFeatures vAdvancedCheckbox xp+12 yp+20
-		, &Advanced features.
-	AdvancedCheckbox_TT := "More features if the automatic window shift isn't enough."
+		, Checked gAdvancedControls vAdvancedCheckbox xp+12 yp+20
+		, &Advanced controls.
+	AdvancedCheckbox_TT := "More tools to control game windows."
 	Gui, 2:Add, Button, vOnScreen, &Bring on-screen
 	OnScreen_TT := "Game window stuck off-screen? Click to bring it back!"
+	Gui, 2:Add, Button, vAutoReposition, &Auto-reposition
+	AutoReposition_TT
+		:= "Automatically reposition the game window to fill the screen."
 	; Show GUI.
 	Gui, 2:Show, x800 y800 w342 h280, Windowed Game Control - "%WinTitle%"	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 }
 OnMessage(0x200, "WM_MOUSEMOVE")	; Tooltips
 return
 
+
 ; [Keep changes]: Moving the window was successful. Exit.
 2ButtonKeepChanges:
-ExitApp
+{
+	ExitApp
+}
 
 ; [Revert]: Undo any changes and end.
 2ButtonRevert:
 2GuiClose:
 2GuiEscape:
-WinMove, %WinTitle%, , %WinX%, %WinY%
-ExitApp
+{
+	WinMove, %WinTitle%, , %OriginalX%, %OriginalY%
+	ExitApp
+}
 
-; [Advanced features.]
-AdvancedFeatures:
-Gui, Submit, NoHide
-RegWrite, REG_DWORD, HKCU, Software\FaffyBucket\Windowed Game Control
-	, AdvancedCheckbox, %AdvancedCheckbox%
-WinMove, %WinTitle%, , %WinX%, %WinY%
-Reload
-return
+; [Advanced controls.]
+AdvancedControls:
+{
+	Gui, Submit, NoHide
+	RegWrite, REG_DWORD, HKCU, Software\FaffyBucket\Windowed Game Control
+		, AdvancedCheckbox, %AdvancedCheckbox%
+	WinMove, %WinTitle%, , %OriginalX%, %OriginalY%
+	Reload
+	return
+}
 
 ; [Bring on-screen]
 2ButtonBringOn-Screen:
-WinMove, %WinTitle%, , 100, 100
-return
+{
+	WinMove, %WinTitle%, , 100, 100		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	return
+}
+
+; [Auto-reposition]
+2ButtonAuto-Reposition:
+{
+	;WinGetPos, WinX, WinY, WinWidth, WinHeight, %WinTitle%
+	;AutoReposition(MonX, MonY, MonWidth, MonHeight, WinWidth, WinHeight, WinTitle)
+	return
+}
 
 
 
 
 ; GUI 3: "How to use Windowed Game Control"
 HelpHowTo:
-WinGetPos, SGWX, SGWY, , , Windowed Game Control
-SGWX := SGWX - 60
-SGWY := SGWY + 20
-Gui, 3:New
-Gui, 3:Color, FFFFFF
-Gui, 3:Font, s11
-HelpMsgHowTo =
-( LTrim Join`s
-	 Windowed Game Control is a tool for repositioning windowed games running
-	`nat native resolution. Assign it to a keyboard shortcut so that you can
-	`nrun it at the press of a button while in game. When it launches it will
-	`nreposition the game to fill your screen.
-	`n
-	`n
-	`nThe controls:
-	`n
-	`nYES:  Saves the current window position and exits WGC.
-	`n
-	`nNO:  Exits WGC without saving. Closing WGC also exits without saving.
-	`n
-	`nADVANCED:  Advanced options.
-	`n
-)
-Gui, 3:Add, Text, , %HelpMsgHowTo%
-Gui, 3:Add, Button, vOK x220, &OK
-OK_TT :=
-Gui, 3:Show, x%SGWX% y%SGWY%, How to use Windowed Game Control
-return
+{
+	WinGetPos, SGWX, SGWY, , , Windowed Game Control
+	SGWX := SGWX - 60
+	SGWY := SGWY + 20
+	Gui, 3:New
+	Gui, 3:Color, FFFFFF
+	Gui, 3:Font, s11
+	HelpMsgHowTo =
+	( LTrim Join`s
+		 Windowed Game Control is a tool for repositioning windowed games running
+		`nat native resolution. Assign it to a keyboard shortcut so that you can
+		`nrun it at the press of a button while in game. When it launches it will
+		`nreposition the game to fill your screen.
+		`n
+		`n
+		`nThe controls:
+		`n
+		`nYES:  Saves the current window position and exits WGC.
+		`n
+		`nNO:  Exits WGC without saving. Closing WGC also exits without saving.
+		`n
+		`nADVANCED:  Advanced options.
+		`n
+	)
+	Gui, 3:Add, Text, , %HelpMsgHowTo%
+	Gui, 3:Add, Button, vOK x220, &OK
+	OK_TT :=
+	Gui, 3:Show, x%SGWX% y%SGWY%, How to use Windowed Game Control
+	return
+}
 
 3ButtonOK:
 3GuiClose:
 3GuiEscape:
-Gui, Destroy
-return
+{
+	Gui, Destroy
+	return
+}
 
 
 
 
 ; GUI 4: "Tips and troubleshooting"
 HelpTips:
-WinGetPos, SGWX, SGWY, , , Windowed Game Control
-SGWX := SGWX - 60
-SGWY := SGWY + 20
-Gui, 4:New
-Gui, 4:Color, FFFFFF
-Gui, 4:Font, s11
-HelpMsgTips =
-( LTrim Join
-	`nAssign Windowed Game Control to a keyboard shortcut so you can launch it
-	`nin game.
-	`n
-	`nMake sure that the TOP-LEFT corner of the game window is on the correct
-	`nmonitor. Move it to the center to be sure.
-	`n
-	`nMake sure that the TOP-LEFT corner of the game you want to reposition is
-	`nclearly on the monitor workspace. If it is on/near the edge of the screen
-	, or
-	`nthe StartMenu/Taskbar area, Windowed Game Control will have problems
-	`ndetecting the window.
-	`n
-	`nMake sure that the game resolution MATCHES the monitor resolution.
-	`n
-	`nSome games do not display at the correct resolution when in windowed
-	`nmode. This can usually be corrected by restarting the game. However, if
-	`nthe game won't display at the correct resolution, then Windowed Game
-	`nControl may not work. You can try resizing it in the Advanced section.
-	`n
-)
-Gui, 4:Add, Text, , %HelpMsgTips%
-Gui, 4:Add, Button, vOK x220, &OK
-OK_TT :=
-Gui, 4:Show, x%SGWX% y%SGWY%, Tips and troubleshooting
-return
+{
+	WinGetPos, SGWX, SGWY, , , Windowed Game Control
+	SGWX := SGWX - 60
+	SGWY := SGWY + 20
+	Gui, 4:New
+	Gui, 4:Color, FFFFFF
+	Gui, 4:Font, s11
+	HelpMsgTips =
+	( LTrim Join
+		`nAssign Windowed Game Control to a keyboard shortcut so you can launch it
+		`nin game.
+		`n
+		`nMake sure that the TOP-LEFT corner of the game window is on the correct
+		`nmonitor. Move it to the center to be sure.
+		`n
+		`nMake sure that the TOP-LEFT corner of the game you want to reposition is
+		`nclearly on the monitor workspace. If it is on/near the edge of the screen
+		, or
+		`nthe StartMenu/Taskbar area, Windowed Game Control will have problems
+		`ndetecting the window.
+		`n
+		`nMake sure that the game resolution MATCHES the monitor resolution.
+		`n
+		`nSome games do not display at the correct resolution when in windowed
+		`nmode. This can usually be corrected by restarting the game. However, if
+		`nthe game won't display at the correct resolution, then Windowed Game
+		`nControl may not work. You can try resizing it in the Advanced section.
+		`n
+	)
+	Gui, 4:Add, Text, , %HelpMsgTips%
+	Gui, 4:Add, Button, vOK x220, &OK
+	OK_TT :=
+	Gui, 4:Show, x%SGWX% y%SGWY%, Tips and troubleshooting
+	return
+}
 
 4ButtonOK:
 4GuiClose:
 4GuiEscape:
-Gui, Destroy
-return
+{
+	Gui, Destroy
+	return
+}
 
 
 
 
 ; GUI 5: "About Windowed Game Control"
 HelpAbout:
-WinGetPos, SGWX, SGWY, , , Windowed Game Control
-SGWX := SGWX - 60
-SGWY := SGWY + 20
-Gui, 5:New
-Gui, 5:Color, FFFFFF
-Gui, 5:Font, s11
-HelpMsgAbout = 
-(
-	Version 0.06
-)
-Gui, 5:Add, Text, , %HelpMsgAbout%
-Gui, 5:Add, Button, vOK x220, &OK
-OK_TT :=
-Gui, 5:Show, x%SGWX% y%SGWY%, About Windowed Game Control
-return
+{
+	WinGetPos, SGWX, SGWY, , , Windowed Game Control
+	SGWX := SGWX - 60
+	SGWY := SGWY + 20
+	Gui, 5:New
+	Gui, 5:Color, FFFFFF
+	Gui, 5:Font, s11
+	HelpMsgAbout = 
+	(
+		Version 0.06
+	)
+	Gui, 5:Add, Text, , %HelpMsgAbout%
+	Gui, 5:Add, Button, vOK x220, &OK
+	OK_TT :=
+	Gui, 5:Show, x%SGWX% y%SGWY%, About Windowed Game Control
+	return
+}
 
 5ButtonOK:
 5GuiClose:
 5GuiEscape:
-Gui, Destroy
-return
+{
+	Gui, Destroy
+	return
+}
 
 
 
@@ -309,6 +344,9 @@ TO DO:
 
 
 Windowed Game Control Version History:
+0.09 - Renamed "Advanced features" to "Advanced controls".
+	 - Added AutoReposition().
+	 - Reorganised code.
 0.08 - "Advanced features" checkbox saves state.
 	 - Checkbox toggles window size.
 	 - Added "Bring on-screen".
