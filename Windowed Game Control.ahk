@@ -2,7 +2,7 @@
 *******************************************************************************
 * Windowed Game Control                                                       *
 *                                                                             *
-* Version:              0.09 (version history at the bottom of this script)   *
+* Version:              0.10 (version history at the bottom of this script)   *
 * AutoHotkey Version:   1.1                                                   *
 * Language:             English                                               *
 * Platform:             Windows 7, 8                                          *
@@ -32,7 +32,7 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 RegRead, AdvancedCheckbox, HKCU, Software\FaffyBucket\Windowed Game Control
 	, AdvancedCheckbox
 WinGetActiveTitle, WinTitle
-WinGetPos, OriginalX, OriginalY, OriginalWidth, OriginalHeight, %WinTitle%
+WinGetPos, OriginalX, OriginalY, , , %WinTitle%
 AutoReposition(WinTitle)
 
 
@@ -42,19 +42,26 @@ AutoReposition(WinTitle)
 AutoReposition(WinTitle)
 {
 	; Get details of the active window and monitors.
+	global
 	WinGetPos, WinX, WinY, WinWidth, WinHeight, %WinTitle%
 	SysGet, MonitorCount, MonitorCount
-	Loop, %MonitorCount%	
+	SysGet Monitor1, Monitor, 1
+	if ((Monitor1Left < WinX) && (WinX < Monitor1Right)
+			&& (Monitor1Top < WinY) && (WinY < Monitor1Bottom))
 	{
-		SysGet Monitor, Monitor, %A_Index%
-		if ((MonitorLeft < WinX) && (WinX < MonitorRight)
-			&& (MonitorTop < WinY) && (WinY < MonitorBottom))
-		{
-			MonX := MonitorLeft
-			MonY := MonitorTop
-			MonWidth := MonitorRight - MonitorLeft
-			MonHeight := MonitorBottom - MonitorTop
-		}
+		MonX := Monitor1Left
+		MonY := Monitor1Top
+		MonWidth := Monitor1Right - Monitor1Left
+		MonHeight := Monitor1Bottom - Monitor1Top
+	}
+	SysGet Monitor2, Monitor, 2
+	if ((Monitor2Left < WinX) && (WinX < Monitor2Right)
+			&& (Monitor2Top < WinY) && (WinY < Monitor2Bottom))
+	{
+		MonX := Monitor2Left
+		MonY := Monitor2Top
+		MonWidth := Monitor2Right - Monitor2Left
+		MonHeight := Monitor2Bottom - Monitor2Top
 	}
 	; Move the window.
 	X := (MonX - ((WinWidth - MonWidth) / 2))
@@ -81,11 +88,11 @@ Gui, 2:Menu, MyMenuBar
 ; Main section.
 Msg1 =
 ( LTrim Join`s
-	The active window has been repositioned. Do you want
-	`nto keep this window size and position?
+	The active window has been repositioned. Do you
+	`nwant to keep this window size and position?
 )
 Gui, 2:Add, GroupBox, w316 h104,
-Gui, 2:Add, Text, xp+12 yp+20, %Msg1%
+Gui, 2:Add, Text, xp+10 yp+20, %Msg1%
 Gui, 2:Add, Button, Default Section vKeepChanges x146 y68, &Keep changes
 KeepChanges_TT := "Save new window position and exit."
 Gui, 2:Add, Button, vRevert ys, &Revert
@@ -107,11 +114,13 @@ else
 		, Checked gAdvancedControls vAdvancedCheckbox xp+12 yp+20
 		, &Advanced controls.
 	AdvancedCheckbox_TT := "More tools to control game windows."
-	Gui, 2:Add, Button, vOnScreen, &Bring on-screen
-	OnScreen_TT := "Game window stuck off-screen? Click to bring it back!"
+	Gui, 2:Add, Button, vFixStuck, &Fix stuck window
+	FixStuck_TT := "Got a game window that won't move? This will fix it!"
 	Gui, 2:Add, Button, vAutoReposition, &Auto-reposition
 	AutoReposition_TT
 		:= "Automatically reposition the game window to fill the screen."
+	Gui, 2:Add, Button, vNextScreen, &Next screen
+	NextScreen_TT := "Moves the game to the next screen if you have 2 screens."
 	; Show GUI.
 	Gui, 2:Show, x800 y800 w342 h280, Windowed Game Control - "%WinTitle%"	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 }
@@ -146,7 +155,7 @@ AdvancedControls:
 }
 
 ; [Bring on-screen]
-2ButtonBringOn-Screen:
+2ButtonFixStuckWindow:
 {
 	WinMove, %WinTitle%, , 100, 100		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	return
@@ -155,9 +164,23 @@ AdvancedControls:
 ; [Auto-reposition]
 2ButtonAuto-Reposition:
 {
-	;WinGetPos, WinX, WinY, WinWidth, WinHeight, %WinTitle%
-	;AutoReposition(MonX, MonY, MonWidth, MonHeight, WinWidth, WinHeight, WinTitle)
+	AutoReposition(WinTitle)
 	return
+}
+
+; [Next screen]
+2ButtonNextScreen:
+{
+	if (MonitorCount != 2)
+	{
+		MsgBox,, Error!, This only works if you have two monitors!
+		return
+	}
+	else
+	{
+		MsgBox,,, X is %X% - Y is %Y%
+		return
+	}
 }
 
 
@@ -344,6 +367,10 @@ TO DO:
 
 
 Windowed Game Control Version History:
+0.10 - Updated AutoReposition().
+	 - Removed unnecessary code.
+	 - Changed "Bring on-screen" to "Fix stuck window".
+	 - Added "Next screen" button.
 0.09 - Renamed "Advanced features" to "Advanced controls".
 	 - Added AutoReposition().
 	 - Reorganised code.
