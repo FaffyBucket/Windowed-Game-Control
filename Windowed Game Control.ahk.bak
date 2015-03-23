@@ -2,7 +2,7 @@
 *******************************************************************************
 * Windowed Game Control                                                       *
 *                                                                             *
-* Version:              0.10 (version history at the bottom of this script)   *
+* Version:              0.11 (version history at the bottom of this script)   *
 * AutoHotkey Version:   1.1                                                   *
 * Language:             English                                               *
 * Platform:             Windows 7, 8                                          *
@@ -38,32 +38,41 @@ AutoReposition(WinTitle)
 
 
 
-; Automatically move the active window to fill the monitor.
-AutoReposition(WinTitle)
+; Get details of the active window and monitors.
+GetPosition()
 {
-	; Get details of the active window and monitors.
 	global
 	WinGetPos, WinX, WinY, WinWidth, WinHeight, %WinTitle%
 	SysGet, MonitorCount, MonitorCount
 	SysGet Monitor1, Monitor, 1
-	if ((Monitor1Left < WinX) && (WinX < Monitor1Right)
-			&& (Monitor1Top < WinY) && (WinY < Monitor1Bottom))
+	SysGet Monitor2, Monitor, 2
+	return
+}
+
+
+
+
+; Automatically move the active window to fill the monitor.
+AutoReposition(WinTitle)
+{
+	global
+	GetPosition()
+	if ((Monitor1Left < WinX + 100) && (WinX < Monitor1Right)
+			&& (Monitor1Top < WinY + 100) && (WinY < Monitor1Bottom))
 	{
 		MonX := Monitor1Left
 		MonY := Monitor1Top
 		MonWidth := Monitor1Right - Monitor1Left
 		MonHeight := Monitor1Bottom - Monitor1Top
 	}
-	SysGet Monitor2, Monitor, 2
-	if ((Monitor2Left < WinX) && (WinX < Monitor2Right)
-			&& (Monitor2Top < WinY) && (WinY < Monitor2Bottom))
+	if ((Monitor2Left < WinX + 100) && (WinX < Monitor2Right)
+			&& (Monitor2Top < WinY + 100) && (WinY < Monitor2Bottom))
 	{
 		MonX := Monitor2Left
 		MonY := Monitor2Top
 		MonWidth := Monitor2Right - Monitor2Left
 		MonHeight := Monitor2Bottom - Monitor2Top
 	}
-	; Move the window.
 	X := (MonX - ((WinWidth - MonWidth) / 2))
 	Y := (MonY - (WinHeight - MonHeight - (((WinWidth - MonWidth) / 2))))
 	WinMove, %WinTitle%, , %X%, %Y%
@@ -157,7 +166,7 @@ AdvancedControls:
 ; [Bring on-screen]
 2ButtonFixStuckWindow:
 {
-	WinMove, %WinTitle%, , 100, 100		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	WinMove, %WinTitle%, , MonX + 100, MonY + 100		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	return
 }
 
@@ -178,7 +187,28 @@ AdvancedControls:
 	}
 	else
 	{
-		MsgBox,,, X is %X% - Y is %Y%
+		GetPosition()
+		if ((Monitor1Left < WinX + 100) && (WinX < Monitor1Right)
+				&& (Monitor1Top < WinY + 100) && (WinY < Monitor1Bottom))
+		{
+			MonX := Monitor2Left
+			MonY := Monitor2Top
+			;MonWidth := Monitor1Right - Monitor1Left
+			;MonHeight := Monitor1Bottom - Monitor1Top
+			;MsgBox,,, Left: %Monitor1Left% `n Top: %Monitor1Top% `n Bottom: %Monitor1Bottom% `n Right: %Monitor1Right%
+		}
+		if ((Monitor2Left < WinX + 100) && (WinX < Monitor2Right)
+				&& (Monitor2Top < WinY + 100) && (WinY < Monitor2Bottom))
+		{
+			MonX := Monitor1Left
+			MonY := Monitor1Top
+			;MonWidth := Monitor2Right - Monitor2Left
+			;MonHeight := Monitor2Bottom - Monitor2Top
+			;MsgBox,,, Left: %Monitor2Left% `n Top: %Monitor2Top% `n Bottom: %Monitor2Bottom% `n Right: %Monitor2Right%
+		}
+		X := (MonX - ((WinWidth - MonWidth) / 2))
+		Y := (MonY - (WinHeight - MonHeight - (((WinWidth - MonWidth) / 2))))
+		WinMove, %WinTitle%, , %X%, %Y%
 		return
 	}
 }
@@ -250,7 +280,7 @@ HelpTips:
 		`nMake sure that the TOP-LEFT corner of the game you want to reposition is
 		`nclearly on the monitor workspace. If it is on/near the edge of the screen
 		, or
-		`nthe StartMenu/Taskbar area, Windowed Game Control will have problems
+		`nthe StartMenu/Taskbar area, Windowed Game Control may have problems
 		`ndetecting the window.
 		`n
 		`nMake sure that the game resolution MATCHES the monitor resolution.
@@ -367,10 +397,12 @@ TO DO:
 
 
 Windowed Game Control Version History:
+0.11 - Added GetPosition().
+	 - Added 100x100 offset.
 0.10 - Updated AutoReposition().
 	 - Removed unnecessary code.
 	 - Changed "Bring on-screen" to "Fix stuck window".
-	 - Added "Next screen".
+	 - Added "Next screen" button.
 0.09 - Renamed "Advanced features" to "Advanced controls".
 	 - Added AutoReposition().
 	 - Reorganised code.
