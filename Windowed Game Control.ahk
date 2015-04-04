@@ -2,7 +2,7 @@
 *******************************************************************************
 * Windowed Game Control                                                       *
 *                                                                             *
-* Version:              0.11 (version history at the bottom of this script)   *
+* Version:              0.12 (version history at the bottom of this script)   *
 * AutoHotkey Version:   1.1                                                   *
 * Language:             English                                               *
 * Platform:             Windows 7, 8                                          *
@@ -22,18 +22,25 @@
 SendMode Input  ; Recommended due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
-#NoTrayIcon
-#SingleInstance
+#SingleInstance force
 
 
 
 
 ; MAIN
+Hotkey, !F1, WGCHotkey
+return
+
+WGCHotkey:
 RegRead, AdvancedCheckbox, HKCU, Software\FaffyBucket\Windowed Game Control
 	, AdvancedCheckbox
+RegRead, WGCX, HKCU, Software\FaffyBucket\Windowed Game Control, WGCX
+RegRead, WGCY, HKCU, Software\FaffyBucket\Windowed Game Control, WGCY
 WinGetActiveTitle, WinTitle
-WinGetPos, OriginalX, OriginalY, , , %WinTitle%
+WinGetPos, OriginalX, OriginalY, OriginalWidth, OriginalHeight, %WinTitle%
 AutoReposition(WinTitle)
+RunGUI()
+return
 
 
 
@@ -84,96 +91,108 @@ AutoReposition(WinTitle)
 
 ; GUI 2 (there is no GUI 1).
 ; GUI settings.
-Gui, 2:+MinSize342x180 +Resize
-Gui, 2:Color, FFFFFF
-Gui, 2:Font, s11
-; Help Menu.
-Menu, HelpMenu, Add, &How to use Windowed Game Control, HelpHowTo
-Menu, HelpMenu, Add, &Tips and troubleshooting, HelpTips
-Menu, HelpMenu, Add ; Separator line.
-Menu, HelpMenu, Add, &About Windowed Game Control, HelpAbout
-Menu, MyMenuBar, Add, &Help, :HelpMenu
-Gui, 2:Menu, MyMenuBar
-; Main section.
-Msg1 =
-( LTrim Join`s
-	The active window has been repositioned. Do you
-	`nwant to keep this window size and position?
-)
-Gui, 2:Add, GroupBox, w316 h104,
-Gui, 2:Add, Text, xp+10 yp+20, %Msg1%
-Gui, 2:Add, Button, Default Section vKeepChanges x146 y68, &Keep changes
-KeepChanges_TT := "Save new window position and exit."
-Gui, 2:Add, Button, vRevert ys, &Revert
-Revert_TT := "Undo all changes and exit."
-if (AdvancedCheckbox == 0)	
+RunGUI()
 {
-	Gui, 2:Add, GroupBox, Section x13 y117 w154 h49,
-	Gui, 2:Add, Checkbox
-		, gAdvancedControls vAdvancedCheckbox xp+12 yp+20, &Advanced controls.
-	AdvancedCheckbox_TT := "More tools to control game windows."
-	; Show GUI.
-	Gui, 2:Show, x800 y800 w342 h180, Windowed Game Control - "%WinTitle%"	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	global
+	Gui, 2:+MinSize342x180 +Resize
+	Gui, 2:Color, FFFFFF
+	Gui, 2:Font, s11
+	; Help Menu.
+	Menu, HelpMenu, Add, &How to use Windowed Game Control, HelpHowTo
+	Menu, HelpMenu, Add, &Tips and troubleshooting, HelpTips
+	Menu, HelpMenu, Add ; Separator line.
+	Menu, HelpMenu, Add, &About Windowed Game Control, HelpAbout
+	Menu, MyMenuBar, Add, &Help, :HelpMenu
+	Gui, 2:Menu, MyMenuBar
+	; Main section.
+	Msg1 =
+	( LTrim Join`s
+		The active window has been repositioned. Do you
+		`nwant to save this window size and position?
+	)
+	Gui, 2:Add, GroupBox, w316 h104,
+	Gui, 2:Add, Text, xp+10 yp+20, %Msg1%
+	Gui, 2:Add, Button, Default Section vSave x117 y68, &Save
+	Save_TT := "Save new window position and exit."
+	Gui, 2:Add, Button, vUndo ys, &Undo
+	Undo_TT := "Undo all changes and exit."
+	if (AdvancedCheckbox == 0)	
+	{
+		Gui, 2:Add, GroupBox, Section x13 y117 w104 h49,
+		Gui, 2:Add, Checkbox
+			, gAdvanced vAdvancedCheckbox xp+12 yp+20, &Advanced.
+		AdvancedCheckbox_TT := "Advanced window controls, and WGC settings."
+		; Show GUI.
+		Gui, 2:Show, x%WGCX% y%WGCY% w342 h180
+			, Windowed Game Control - "%WinTitle%"
+	}
+	else
+	; Advanced section.
+	{
+		Gui, 2:Add, GroupBox, Section x13 y117 w316 h200,
+		Gui, 2:Add, Checkbox
+			, Checked gAdvanced vAdvancedCheckbox xp+12 yp+20
+			, &Advanced.
+		AdvancedCheckbox_TT := "Advanced window controls, and WGC settings."
+		; Advanced controls.
+		Gui, 2:Add, Button, Section vNextScreen w140, &Next screen
+		NextScreen_TT := "Moves the game to the next screen if you have 2 screens."
+		Gui, 2:Add, Button, vAutoReposition wp ys, &Auto-reposition
+		AutoReposition_TT
+			:= "Automatically reposition the game window to fill the screen."
+		Gui, 2:Add, Button, Section vFixStuck x25 yp+38 wp, &Fix stuck window
+		FixStuck_TT := "Got a game window that won't move? This will fix it!"
+		Gui, 2:Add, Button, vResizeWindow wp ys, &Resize window
+		ResizeWindow_TT := "Manually resize the game window."
+		; WGC settings.
+		;Gui, 2:Add, Text, Section x28 yp+44, Keyboard shortcut: 
+		;Gui, 2:Add, Hotkey, vWGCHotkey x150 yp-4
+		;WGCHotkey_TT := "Change the shortcut that launches the WGC window."		
+		; Show GUI.
+		Gui, 2:Show, x%WGCX% y%WGCY% w342 h280
+			, Windowed Game Control - "%WinTitle%"
+	}
+	OnMessage(0x200, "WM_MOUSEMOVE")	; Tooltips
+	return
 }
-else
-; Advanced section.
-{
-	Gui, 2:Add, GroupBox, Section x13 y117 w316 h200,
-	Gui, 2:Add, Checkbox
-		, Checked gAdvancedControls vAdvancedCheckbox xp+12 yp+20
-		, &Advanced controls.
-	AdvancedCheckbox_TT := "More tools to control game windows."
-	Gui, 2:Add, Button, vFixStuck, &Fix stuck window
-	FixStuck_TT := "Got a game window that won't move? This will fix it!"
-	Gui, 2:Add, Button, vAutoReposition, &Auto-reposition
-	AutoReposition_TT
-		:= "Automatically reposition the game window to fill the screen."
-	Gui, 2:Add, Button, vNextScreen, &Next screen
-	NextScreen_TT := "Moves the game to the next screen if you have 2 screens."
-	; Show GUI.
-	Gui, 2:Show, x800 y800 w342 h280, Windowed Game Control - "%WinTitle%"	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-}
-OnMessage(0x200, "WM_MOUSEMOVE")	; Tooltips
-return
 
 
-; [Keep changes]: Moving the window was successful. Exit.
-2ButtonKeepChanges:
+; [Save]: Moving the window was successful. Exit.
+2ButtonSave:
 {
-	ExitApp
+	WinGetPos, WGCX, WGCY, , , Windowed Game Control
+	RegWrite, REG_DWORD, HKCU, Software\FaffyBucket\Windowed Game Control
+		, WGCX, %WGCX%
+	RegWrite, REG_DWORD, HKCU, Software\FaffyBucket\Windowed Game Control
+		, WGCY, %WGCY%
+	Gui, Destroy
+	return
 }
 
-; [Revert]: Undo any changes and end.
-2ButtonRevert:
+; [Undo]: Undo any changes and end.
+2ButtonUndo:
 2GuiClose:
 2GuiEscape:
 {
-	WinMove, %WinTitle%, , %OriginalX%, %OriginalY%
-	ExitApp
+	WinMove, %WinTitle%, , %OriginalX%, %OriginalY%, %OriginalWidth%, %OriginalHeight%
+	WinGetPos, WGCX, WGCY, , , Windowed Game Control
+	RegWrite, REG_DWORD, HKCU, Software\FaffyBucket\Windowed Game Control
+		, WGCX, %WGCX%
+	RegWrite, REG_DWORD, HKCU, Software\FaffyBucket\Windowed Game Control
+		, WGCY, %WGCY%
+	Gui, Destroy
+	return
 }
 
 ; [Advanced controls.]
-AdvancedControls:
+Advanced:
 {
 	Gui, Submit, NoHide
 	RegWrite, REG_DWORD, HKCU, Software\FaffyBucket\Windowed Game Control
 		, AdvancedCheckbox, %AdvancedCheckbox%
 	WinMove, %WinTitle%, , %OriginalX%, %OriginalY%
-	Reload
-	return
-}
-
-; [Bring on-screen]
-2ButtonFixStuckWindow:
-{
-	WinMove, %WinTitle%, , MonX + 100, MonY + 100		;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	return
-}
-
-; [Auto-reposition]
-2ButtonAuto-Reposition:
-{
-	AutoReposition(WinTitle)
+	Gui, Destroy
+	RunGUI()
 	return
 }
 
@@ -205,6 +224,66 @@ AdvancedControls:
 		WinMove, %WinTitle%, , %X%, %Y%
 		return
 	}
+}
+
+; [Auto-reposition]
+2ButtonAuto-Reposition:
+{
+	AutoReposition(WinTitle)
+	return
+}
+
+; [Fix stuck window]
+2ButtonFixStuckWindow:
+{
+	WinMove, %WinTitle%, , 100, 100
+	return
+}
+
+; [Resize window]
+2ButtonResizeWindow:
+{
+	RegRead, ResizeHeight, HKCU, Software\FaffyBucket\Windowed Game Control
+		, ResizeHeight
+	RegRead, ResizeWidth, HKCU, Software\FaffyBucket\Windowed Game Control
+		, ResizeWidth
+	SuggestedWidth := MonWidth + 6
+	SuggestedHeight := MonHeight + 28
+	ResizeMsg1 = 
+	( LTrim Join`s
+		Please enter the desired width of the game window in pixels. This should be
+		the width of your display, plus the width of the left and right borders of the
+		game window.
+		`n
+		`nFor example if your display's resolution is %MonWidth%x%MonHeight% and you are running
+		Windows 7 with the default theme and DPI, you would enter "%SuggestedWidth%".
+	)
+	InputBox, ResizeWidth, Enter desired width, %ResizeMsg1%, , 375, 246, , , , , %ResizeWidth%
+	If ErrorLevel
+	{
+		return
+	}
+	ResizeMsg2 =
+	( LTrim Join`s
+		Please enter the desired height of the game window in pixels. This should be
+		the height of your display, plus the height of the top border (Titlebar) and
+		bottom border of the game window.
+		`n
+		`nFor example if your display's resolution is %MonWidth%x%MonHeight% and you are running
+		Windows 7 with the default theme and DPI, you would enter "%SuggestedHeight%".
+	)
+	InputBox, ResizeHeight, Enter desired height, %ResizeMsg2%, , 375, 257, , , , , %ResizeHeight%
+	If ErrorLevel
+	{
+		return
+	}
+	WinMove, %WinTitle%, , %X%, %Y%, %ResizeWidth%, %ResizeHeight%
+	AutoReposition(WinTitle)
+	RegWrite, REG_DWORD, HKCU, Software\FaffyBucket\Windowed Game Control
+		, ResizeHeight, %ResizeHeight%
+	RegWrite, REG_DWORD, HKCU, Software\FaffyBucket\Windowed Game Control
+		, ResizeWidth, %ResizeWidth%
+	return
 }
 
 
@@ -366,7 +445,7 @@ WM_MOUSEMOVE()
 *******************************************************************************
 Windowed Game Control Known Issues:
  - If the top-left corner of the window is off-screen, Windowed Game Control
-   can't reposition the window properly.
+   can't reposition the window automatically.
  - If the top-left corner of the window is on or under the Taskbar, Windowed
    Game Control can't reposition the window properly.
  - Sometimes a game in windowed mode won't render at the correct resolution.
@@ -378,17 +457,29 @@ Windowed Game Control Known Issues:
 TO DO:
  - Advanced section.
     - GUI.
-	- Resize window.
+	- Resize window GUI.
 	- Replace Reload with Destroy and Show.
 	- Favourites.
- - Remember window position.
+	- Hardcore mode.
  - Hotkey.
- - About.
+ - Update Help.
  - Create icon.
  - Compile.
+ - Settings.ini.
+ - Updater.
+ - System tray menu.
 
 
 Windowed Game Control Version History:
+0.12 - Remember window position when WGC closes/opens.
+	 - Updated Save button.
+	 - Updated Undo button.
+	 - Added "Resize window" button.
+	 - Updated positioning of Advanced section buttons.
+	 - Added !F1 hotkey.
+	 - Updated Advanced checkbox.
+	 - Updated #SingleInstance.
+	 - Updated TO DO list.
 0.11 - Added GetPosition().
 	 - Added 100x100 offset.
 	 - Added "Next screen" functionality.

@@ -2,9 +2,17 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
-#NoTrayIcon
 #SingleInstance
 
+
+
+
+Hotkey, !F1, MyLabel
+return
+
+MyLabel:
+MsgBox You pressed %A_Thishotkey%
+return
 
 
 
