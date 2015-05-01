@@ -2,7 +2,7 @@
 *******************************************************************************
 * Windowed Game Control                                                       *
 *                                                                             *
-* Version:              0.12 (version history at the bottom of this script)   *
+* Version:              0.13 (version history at the bottom of this script)   *
 * AutoHotkey Version:   1.1                                                   *
 * Language:             English                                               *
 * Platform:             Windows 7, 8                                          *
@@ -32,13 +32,25 @@ Hotkey, !F1, WGCHotkey
 return
 
 WGCHotkey:
-RegRead, AdvancedCheckbox, HKCU, Software\FaffyBucket\Windowed Game Control
-	, AdvancedCheckbox
-RegRead, WGCX, HKCU, Software\FaffyBucket\Windowed Game Control, WGCX
-RegRead, WGCY, HKCU, Software\FaffyBucket\Windowed Game Control, WGCY
 WinGetActiveTitle, WinTitle
 WinGetPos, OriginalX, OriginalY, OriginalWidth, OriginalHeight, %WinTitle%
 AutoReposition(WinTitle)
+RegRead, AdvancedCheckbox, HKCU, Software\FaffyBucket\Windowed Game Control
+	, AdvancedCheckbox
+If ErrorLevel
+{
+	AdvancedCheckbox := 0
+}
+RegRead, WGCX, HKCU, Software\FaffyBucket\Windowed Game Control, WGCX
+If ErrorLevel
+{
+	WGCX := (MonWidth / 2) - 171
+}
+RegRead, WGCY, HKCU, Software\FaffyBucket\Windowed Game Control, WGCY
+If ErrorLevel
+{
+	WGCY := (MonHeight / 2) - 90
+}
 RunGUI()
 return
 
@@ -145,9 +157,9 @@ RunGUI()
 		Gui, 2:Add, Button, vResizeWindow wp ys, &Resize window
 		ResizeWindow_TT := "Manually resize the game window."
 		; WGC settings.
-		Gui, 2:Add, Text, Section x28 yp+44, Keyboard shortcut: 
-		Gui, 2:Add, Hotkey, vWGCHotkey x150 yp-4
-		WGCHotkey_TT := "Change the shortcut that launches the WGC window."		
+		;Gui, 2:Add, Text, Section x28 yp+44, Keyboard shortcut: 
+		;Gui, 2:Add, Hotkey, vWGCHotkey x150 yp-4
+		;WGCHotkey_TT := "Change the shortcut that launches the WGC window."		
 		; Show GUI.
 		Gui, 2:Show, x%WGCX% y%WGCY% w342 h280
 			, Windowed Game Control - "%WinTitle%"

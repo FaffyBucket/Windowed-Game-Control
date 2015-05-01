@@ -2,7 +2,7 @@
 *******************************************************************************
 * Windowed Game Control                                                       *
 *                                                                             *
-* Version:              0.12 (version history at the bottom of this script)   *
+* Version:              0.13 (version history at the bottom of this script)   *
 * AutoHotkey Version:   1.1                                                   *
 * Language:             English                                               *
 * Platform:             Windows 7, 8                                          *
@@ -32,13 +32,25 @@ Hotkey, !F1, WGCHotkey
 return
 
 WGCHotkey:
-RegRead, AdvancedCheckbox, HKCU, Software\FaffyBucket\Windowed Game Control
-	, AdvancedCheckbox
-RegRead, WGCX, HKCU, Software\FaffyBucket\Windowed Game Control, WGCX
-RegRead, WGCY, HKCU, Software\FaffyBucket\Windowed Game Control, WGCY
 WinGetActiveTitle, WinTitle
 WinGetPos, OriginalX, OriginalY, OriginalWidth, OriginalHeight, %WinTitle%
 AutoReposition(WinTitle)
+RegRead, AdvancedCheckbox, HKCU, Software\FaffyBucket\Windowed Game Control
+	, AdvancedCheckbox
+If ErrorLevel
+{
+	AdvancedCheckbox := 0
+}
+RegRead, WGCX, HKCU, Software\FaffyBucket\Windowed Game Control, WGCX
+If ErrorLevel
+{
+	WGCX := (MonWidth / 2) - 171
+}
+RegRead, WGCY, HKCU, Software\FaffyBucket\Windowed Game Control, WGCY
+If ErrorLevel
+{
+	WGCY := (MonHeight / 2) - 90
+}
 RunGUI()
 return
 
@@ -471,6 +483,9 @@ TO DO:
 
 
 Windowed Game Control Version History:
+0.13 - Added error checking when reading values for AdvancedCheckbox, WGCX, and
+	   WGCY from the registry. Default values are set if those registry keys
+	   don't exist.
 0.12 - Remember window position when WGC closes/opens.
 	 - Updated Save button.
 	 - Updated Undo button.
