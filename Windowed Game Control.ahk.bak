@@ -29,6 +29,7 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 ; MAIN
 Hotkey, !F1, WGCHotkey
+Hotkey, !F2, 2ButtonNextScreen
 return
 
 WGCHotkey:
@@ -483,6 +484,9 @@ TO DO:
 
 
 Windowed Game Control Version History:
+0.13 - Added error checking when reading values for AdvancedCheckbox, WGCX, and
+	   WGCY from the registry. Default values are set if those registry keys
+	   don't exist.
 0.12 - Remember window position when WGC closes/opens.
 	 - Updated Save button.
 	 - Updated Undo button.

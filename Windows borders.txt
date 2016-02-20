@@ -1,0 +1,9 @@
+Here are a list of window border dimensions for Windows. All dimensions are in pixels.
+
+Windows 7, default DPI:
+ - Height: 28px
+ - Width: 6px
+ 
+Windows 10, default DPI:
+ - Height: 
+ - Width: 

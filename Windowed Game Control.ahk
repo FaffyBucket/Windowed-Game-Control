@@ -2,7 +2,7 @@
 *******************************************************************************
 * Windowed Game Control                                                       *
 *                                                                             *
-* Version:              0.13 (version history at the bottom of this script)   *
+* Version:              0.14 (version history at the bottom of this script)   *
 * AutoHotkey Version:   1.1                                                   *
 * Language:             English                                               *
 * Platform:             Windows 7, 8                                          *
@@ -29,6 +29,7 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 ; MAIN
 Hotkey, !F1, WGCHotkey
+Hotkey, !F2, 2ButtonNextScreen
 return
 
 WGCHotkey:
@@ -483,6 +484,7 @@ TO DO:
 
 
 Windowed Game Control Version History:
+0.14 - Added keyboard shortcut for 2ButtonNextScreen.
 0.13 - Added error checking when reading values for AdvancedCheckbox, WGCX, and
 	   WGCY from the registry. Default values are set if those registry keys
 	   don't exist.
